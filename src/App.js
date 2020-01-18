@@ -4,10 +4,11 @@ import Grid from '@material-ui/core/Grid';
 import Card from '@material-ui/core/Card';
 import Typography from '@material-ui/core/Typography';
 import Button from '@material-ui/core/Button';
-import { CardContent } from '@material-ui/core';
+import { CardContent, Box } from '@material-ui/core';
 import AddShoppingCartIcon from '@material-ui/icons/AddShoppingCart';
-import { ButtonGroup, Drawer} from '@material-ui/core';
+import { ButtonGroup, Drawer, List} from '@material-ui/core';
 
+import SimpleMenu from './Menu'
 
 const useStyles = makeStyles(theme => ({
   cardy: {
@@ -23,6 +24,7 @@ const useStyles = makeStyles(theme => ({
   },
 }));
 
+
 const App = () => {
   const classes = useStyles();
   const [data, setData] = useState({});
@@ -36,13 +38,7 @@ const App = () => {
     fetchProducts();
   }, []);
 
-  const [state, setState] = useState({
-    top: false,
-    left: false,
-    bottom: false,
-    right: false
-  });
-
+  const [state, setState] = useState({left: true});
   const toggleDrawer = (side, open) => event => {
     if (
       event.type === "keydown" &&
@@ -50,29 +46,45 @@ const App = () => {
     ) {
       return;
     }
-
+    
     setState({ ...state, [side]: open });
   };
+  const [Items, setItems] = useState([]);
 
+  const cartAdd = (shirt) =>
+  {
+    console.log(shirt)
+    let val = Items;
+    let x = false;
+    for(let i = 0; i < Items.length; i++)
+    {
+      if(Items[i].value === shirt)
+      {
+        x = true
+        break;
+      }
+    }
+      if(x)
+      {
+        Items.quantity += 1;
+      }
+      else
+      {
+         val.push({
+           value: shirt
+           , quantity: 1
+         })
+      }
+    console.log(shirt)
+    setItems(val)
+    setState({ right: true });
+  }
 
-  return (
-    <div>
-      <div>
-        <Button onClick={toggleDrawer('right', true)} style={{ float: "right" }}><AddShoppingCartIcon style={{ fontSize: 50, float: "right" }} /></Button>
-        <Drawer
-        anchor="right"
-        open={state.right}
-        onClose={toggleDrawer("right", false)}>
-          <div
-      className={classes.list} role="presentation">
-        
-        </div>
-      </Drawer>
-      </div>
-      <div className={classes.control}>
-        <Grid container spacing={10} justify="center" alignItems="center">
-          {products.map(product =>
-            <Grid item xs={3} alignItems="center" alignContent="center">
+  const Display = ({product}) =>
+{
+    return(
+    
+            <Grid item xs={0} sm={2.1} alignItems="center" alignContent="center">
               <Card>
                 <img src={"./data/products/" + product.sku + "_1.jpg"} alt="Cart icon" />
                 <CardContent>
@@ -87,26 +99,73 @@ const App = () => {
                   </Typography>
 
                 </CardContent>
+                <CardContent>
                 <ButtonGroup size="large">
                   <Button variant="contained">
                     S
-            </Button>
+                  </Button>
                   <Button variant="contained">
                     M
-            </Button>
+                  </Button>
                   <Button variant="contained">
                     L
-            </Button>
+                  </Button>
                   <Button variant="contained">
                     XL
-            </Button>
+                  </Button>
                 </ButtonGroup>
+                </CardContent>
+                <CardContent>
+                <Button onClick={() => cartAdd(product)} variant="contained" color="primary" style={{paddingBottom:10}}>
+                    Add to Cart
+                </Button>
+                </CardContent>
+                
 
               </Card>
             </Grid>
-          )};
-      </Grid>
+
+          )
+    
+};
+
+
+
+  return (
+
+    <div>
+      <div>
+        <Button onClick={toggleDrawer('right', true)} style={{ float: "right" }}><AddShoppingCartIcon style={{ fontSize: 50, float: "right" }} /></Button>
+        <Drawer anchor="right" open={state.right} onClose={toggleDrawer("right", false)}>
+          <div className={classes.list} role="presentation">
+          <List>
+        
+      </List>
+          </div>
+        </Drawer>
       </div>
+      <div className={classes.control}>
+        <Grid container>
+          <Grid item>
+            <Box textAlign="left" m={1} style={{marginLeft: 100}}>
+              16 Product(s) found
+                </Box>
+          </Grid>
+          
+          <Grid item style={{ alignContent: "right", marginLeft: 1100 }}>
+            <SimpleMenu style={{ alignContent: "right" }} />
+          </Grid>
+        </Grid>
+        <br />
+        <Grid container spacing={1} justify="center" alignItems="center">
+          {products.map(product =>
+            <Display product={product} />
+          )};
+          
+        </Grid>
+      </div>
+
+
     </div>
   )
 }
