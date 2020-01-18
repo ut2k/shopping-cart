@@ -50,13 +50,14 @@ const App = () => {
     setState({ ...state, [side]: open });
   };
   const [Items, setItems] = useState([]);
-
+  const arr = Object.values(Items)
   const cartAdd = (shirt) =>
   {
     console.log(shirt)
     let val = Items;
     let x = false;
-    for(let i = 0; i < Items.length; i++)
+    let i;
+    for(i = 0; i < Items.length; i++)
     {
       if(Items[i].value === shirt)
       {
@@ -66,7 +67,7 @@ const App = () => {
     }
       if(x)
       {
-        Items.quantity += 1;
+        Items[i].quantity += 1;
       }
       else
       {
@@ -139,7 +140,8 @@ const App = () => {
         <Drawer anchor="right" open={state.right} onClose={toggleDrawer("right", false)}>
           <div className={classes.list} role="presentation">
           <List>
-        
+
+
       </List>
           </div>
         </Drawer>
