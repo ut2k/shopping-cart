@@ -6,7 +6,7 @@ import Typography from '@material-ui/core/Typography';
 import Button from '@material-ui/core/Button';
 import { CardContent, Box } from '@material-ui/core';
 import AddShoppingCartIcon from '@material-ui/icons/AddShoppingCart';
-import { ButtonGroup, Drawer, List, ListItem, ListItemIcon, InboxIcon, MailIcon, ListItemText, ListItemAvatar, Avatar } from '@material-ui/core';
+import { ButtonGroup, Drawer, List, ListItem, ListItemText, ListItemAvatar, Avatar } from '@material-ui/core';
 import CloseIcon from '@material-ui/icons/Close';
 
 import SimpleMenu from './Menu'
@@ -52,8 +52,9 @@ const App = () => {
   };
   const [Items, setItems] = useState([]);
   const arr = Object.values(Items)
-  const cartAdd = (shirt) => {
-    console.log(shirt)
+  const cartAdd = (shirt, boo) => {
+    if (boo)
+    {
     let val = Items;
     let x = false;
     let i;
@@ -65,7 +66,6 @@ const App = () => {
     }
     if (x) {
       Items[i].quantity += 1;
-      console.log("Recounting", Items[i].quantity);
     }
     else {
       val.push({
@@ -73,20 +73,38 @@ const App = () => {
         , quantity: 1
       })
     }
-    console.log("Shirts", shirt);
-    console.log(Items[i].quantity);
     setItems(val);
     setState({ right: true });
   }
-
+  else
+  {
+    cartRemove(shirt)
+    setState({ right: true });
+  }
+    
+  }
+  const cartRemove = (shirt) => {
+    let val = Items;
+    let i;
+    for (i = 0; i < Items.length; i++) {
+      if (Items[i].value === shirt) {
+        Items[i].quantity -= 1;
+        if(Items[i].quantity === 0)
+        {
+          val.splice(val.indexOf(val[i]), 1)
+        } 
+        break;
+      }
+    }
+    setItems(val);
+  }
+  
   const sumPrice = () =>
   {
     let sum = 0;
     for (let i = 0; i < Items.length; i++)
     {
       sum = sum + (Items[i].value.price * Items[i].quantity);
-      console.log(Items[i].value.price);
-      console.log(Items[i].quantity);
     }
     console.log(sum);
     return sum;
@@ -126,7 +144,7 @@ const App = () => {
             </ButtonGroup>
           </CardContent>
           <CardContent>
-            <Button onClick={() => cartAdd(product)} variant="contained" color="primary" style={{ paddingBottom: 10 }}>
+            <Button onClick={() => cartAdd(product, true)} variant="contained" color="primary" style={{ paddingBottom: 10 }}>
               Add to Cart
                 </Button>
           </CardContent>
@@ -138,8 +156,6 @@ const App = () => {
     )
 
   };
-
-
 
   return (
 
@@ -159,12 +175,13 @@ const App = () => {
                   </ListItemAvatar>
                   <ListItemText primary={text.value.title + ' | ' + text.value.description} />
                   <ListItemText style={{marginRight:50}}primary={'$' + text.value.price} />
+                  <Button variant="contained" color="primary" onClick={() => cartAdd(text.value, false)}><CloseIcon size="large"/></Button>
 
                 </ListItem>
               ))}
 
             </List>
-            <Box style={{marginTop:800, }} component="span" display="block" p={1} m={1} bgcolor="background.paper"><h3>{'Total Price: $' + sumPrice()}</h3></Box>
+            <Box style={{marginTop:800}} component="span" display="block" p={1} m={1} bgcolor="background.paper"><h3>{'Total Price: $' + sumPrice()}</h3></Box>
           </div>
         </Drawer>
       </div>
@@ -184,7 +201,7 @@ const App = () => {
         <Grid container spacing={1} justify="center" alignItems="center">
           {products.map(product =>
             <Display product={product} />
-          )};
+          )}
         </Grid>
       </div>
     </div>
