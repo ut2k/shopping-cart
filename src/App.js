@@ -6,8 +6,10 @@ import Typography from '@material-ui/core/Typography';
 import Button from '@material-ui/core/Button';
 import { CardContent, Box } from '@material-ui/core';
 import AddShoppingCartIcon from '@material-ui/icons/AddShoppingCart';
-import { ButtonGroup, Drawer, List, ListItem, ListItemText, ListItemAvatar, Avatar } from '@material-ui/core';
+import { Drawer, List, ListItem, ListItemText, ListItemAvatar, Avatar } from '@material-ui/core';
 import CloseIcon from '@material-ui/icons/Close';
+import ToggleButton from '@material-ui/lab/ToggleButton';
+import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup';
 
 import SimpleMenu from './Menu'
 
@@ -53,63 +55,101 @@ const App = () => {
   const [Items, setItems] = useState([]);
   const arr = Object.values(Items)
   const cartAdd = (shirt, boo) => {
-    if (boo)
-    {
-    let val = Items;
-    let x = false;
-    let i;
-    for (i = 0; i < Items.length; i++) {
-      if (Items[i].value === shirt) {
-        x = true
-        break;
+    if (boo) {
+      let val = Items;
+      let x = false;
+      let i;
+      for (i = 0; i < Items.length; i++) {
+        if (Items[i].value === shirt) {
+          x = true
+          break;
+        }
       }
-    }
-    if (x) {
-      Items[i].quantity += 1;
+      if (x) {
+        let j;
+        let val1 = bold;
+        for (j = 0; j < bold.length; j++) {
+          if (val1[j][0] === Items[i].value.title) {
+            if (Items[i].size === val1[j][1]) {
+              Items[i].quantity += 1;
+            }
+            else {
+              val.push({
+                value: shirt
+                , quantity: 1
+                , size: val1[j][1]
+              })
+            }
+          }
+        }
+
+      }
+      else {
+        setBold(bold);
+        let statement = false;
+        let k;
+        for (k = 0; k < bold.length; k++) { 
+          if (bold[k][0] === shirt.title) {  
+            statement = true;
+            break;
+          }
+        }
+        if (statement) {
+          console.log('impossible')
+          val.push({
+            value: shirt
+            , quantity: 1
+            , size: bold[k][1]
+          })
+        }
+        else {
+          val.push({
+            value: shirt
+            , quantity: 1
+            , size: 'M'
+          })
+        }
+
+      }
+      setItems(val);
+      setState({ right: true });
     }
     else {
-      val.push({
-        value: shirt
-        , quantity: 1
-      })
+      cartRemove(shirt)
+      setState({ right: true });
     }
-    setItems(val);
-    setState({ right: true });
+
   }
-  else
-  {
-    cartRemove(shirt)
-    setState({ right: true });
-  }
-    
-  }
+
   const cartRemove = (shirt) => {
     let val = Items;
     let i;
     for (i = 0; i < Items.length; i++) {
       if (Items[i].value === shirt) {
         Items[i].quantity -= 1;
-        if(Items[i].quantity === 0)
-        {
+        if (Items[i].quantity === 0) {
           val.splice(val.indexOf(val[i]), 1)
-        } 
+        }
         break;
       }
     }
     setItems(val);
   }
-  
-  const sumPrice = () =>
-  {
+
+  const sumPrice = () => {
     let sum = 0;
-    for (let i = 0; i < Items.length; i++)
-    {
+    for (let i = 0; i < Items.length; i++) {
       sum = sum + (Items[i].value.price * Items[i].quantity);
     }
-    console.log(sum);
     return sum;
   }
+
   const Display = ({ product }) => {
+
+    const [alignment, setAlignment] = React.useState();
+    const handleAlignment = (event, newAlignment) => {
+      setAlignment(newAlignment);
+    };
     return (
 
       <Grid item xs={0} sm={2.1} alignItems="center" alignContent="center">
@@ -128,23 +168,27 @@ const App = () => {
 
           </CardContent>
           <CardContent>
-            <ButtonGroup size="large">
-              <Button variant="contained">
+            <ToggleButtonGroup
+              value={alignment}
+              exclusive
+              onChange={handleAlignment}
+              aria-label="text alignment">
+              <ToggleButton value="left" onClick={() => handleBold(product, "S")} aria-label="left aligned">
                 S
-                  </Button>
-              <Button variant="contained">
+            </ToggleButton>
+              <ToggleButton value="center" onClick={() => handleBold(product, "M")} aria-label="centered">
                 M
-                  </Button>
-              <Button variant="contained">
+            </ToggleButton>
+              <ToggleButton value="right" onClick={() => handleBold(product, "L")} aria-label="right aligned">
                 L
-                  </Button>
-              <Button variant="contained">
+            </ToggleButton>
+              <ToggleButton value="justify" onClick={() => handleBold(product, "XL")} aria-label="justified">
                 XL
-                  </Button>
-            </ButtonGroup>
+            </ToggleButton>
+            </ToggleButtonGroup>
           </CardContent>
           <CardContent>
-            <Button onClick={() => cartAdd(product, true)} variant="contained" color="primary" style={{ paddingBottom: 10 }}>
+            <Button key={product.sku} onClick={() => cartAdd(product, true)} variant="contained" color="primary" style={{ paddingBottom: 10 }}>
               Add to Cart
                 </Button>
           </CardContent>
@@ -156,7 +200,23 @@ const App = () => {
     )
 
   };
+  const [bold, setBold] = React.useState([]);
 
+  const handleBold = (product, size) => {
+    let val = bold;
+    let statement = false;
+    let i;
+    for (i = 0; i < bold.length; i++) {
+      if (val[i][0] === product.title) {
+        val[i][1] = size;
+        statement = true;
+      }
+    }
+    if (!statement) {
+      val.push([product.title, size]);
+    }
+    setBold(val);
+  };
   return (
 
     <div>
@@ -164,24 +224,24 @@ const App = () => {
         <Button onClick={toggleDrawer('right', true)} style={{ float: "right" }}><AddShoppingCartIcon style={{ fontSize: 50, float: "right" }} /></Button>
         <Drawer anchor="right" open={state.right} onClose={toggleDrawer("right", false)}>
           <div>
-            <Button variant="contained"><CloseIcon size="large" onClick={toggleDrawer('right', false)}/></Button>
+            <Button variant="contained"><CloseIcon size="large" onClick={toggleDrawer('right', false)} /></Button>
           </div>
           <div className={classes.list} role="presentation">
             <List>
               {arr.map((text) => (
-                <ListItem button key={text}>
+                <ListItem button key={text.value.title + text.value.size}>
                   <ListItemAvatar>
                     <Avatar alt="Remy Sharp" src={"./data/products/" + text.value.sku + "_1.jpg"} />
                   </ListItemAvatar>
-                  <ListItemText primary={text.value.title + ' | ' + text.value.description} />
-                  <ListItemText style={{marginRight:50}}primary={'$' + text.value.price} />
-                  <Button variant="contained" color="primary" onClick={() => cartAdd(text.value, false)}><CloseIcon size="large"/></Button>
+                  <ListItemText primary={text.value.title + ' | Size: ' + text.size + ' | Quantity: ' + text.quantity} />
+                  <ListItemText style={{ marginRight: 50 }} primary={'$' + text.value.price} />
+                  <Button variant="contained" color="primary" onClick={() => cartAdd(text.value, false)}><CloseIcon size="large" /></Button>
 
                 </ListItem>
               ))}
 
             </List>
-            <Box style={{marginTop:800}} component="span" display="block" p={1} m={1} bgcolor="background.paper"><h3>{'Total Price: $' + sumPrice()}</h3></Box>
+            <Box style={{ marginTop: 800 }} component="span" display="block" p={1} m={1} bgcolor="background.paper"><h3>{'Total Price: $' + sumPrice()}</h3></Box>
           </div>
         </Drawer>
       </div>
@@ -200,7 +260,7 @@ const App = () => {
         <br />
         <Grid container spacing={1} justify="center" alignItems="center">
           {products.map(product =>
-            <Display product={product} />
+            <Display key={product.sku} product={product} />
           )}
         </Grid>
       </div>
