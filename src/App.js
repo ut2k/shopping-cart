@@ -11,10 +11,9 @@ import CloseIcon from '@material-ui/icons/Close';
 import ToggleButton from '@material-ui/lab/ToggleButton';
 import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup';
 import SimpleMenu from './Menu'
-
-/*
 import firebase from 'firebase/app';
 import 'firebase/database';
+
 const firebaseConfig = {
   apiKey: "AIzaSyB8CaRsqtVcKVbXXrFiGLsibyz_kLf1TBI",
   authDomain: "shopping-cart-48a84.firebaseapp.com",
@@ -28,7 +27,6 @@ const firebaseConfig = {
 
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database().ref();
-*/
 
 const useStyles = makeStyles(theme => ({
   cardy: {
@@ -57,13 +55,13 @@ const App = () => {
       const json = await response.json();
       setData(json);
     };
-    const fetchInventory = async () => {
-      const response1 = await fetch('./data/inventory.json');
-      const json1 = await response1.json();
-      setInventory(json1);
-    };
+
+    const handleData = snap => {
+      if (snap.val()) setInventory(snap.val());
+    }
+    db.on('value', handleData, error => alert(error));
     fetchProducts();
-    fetchInventory();
+    return () => { db.off('value', handleData); };
   }, []);
 
   const [state, setState] = useState({ left: true });
@@ -87,7 +85,7 @@ const App = () => {
       let x = false;
       let i;
       let j;
-          let val1 = bold;
+      let val1 = bold;
       for (i = 0; i < Items.length; i++) {
         if (Items[i].value === shirt) {
           for (j = 0; j < bold.length; j++) {
@@ -98,18 +96,15 @@ const App = () => {
                 sz = val1[j][1];
                 break;
               }
-
             }
           }
           if (x) { break; }
         }
       }
-      
-      if(!x) {
+      if (!x) {
         setBold(bold);
         let statement = false;
         let k;
-
         for (k = 0; k < bold.length; k++) {
           if (bold[k][0] === shirt.title) {
             statement = true;
@@ -122,7 +117,6 @@ const App = () => {
             , quantity: 1
             , size: bold[k][1]
           })
-
           sz = bold[k][1];
         }
         else {
@@ -133,7 +127,6 @@ const App = () => {
           })
           sz = 'M';
         }
-
       }
       setItems(val);
       setState({ right: true });
@@ -146,7 +139,7 @@ const App = () => {
       setInventory(newInventory);
     }
   }
-  
+
   const cartRemove = (shirt, size) => {
     let val = Items;
     let newInventory = inventory;
@@ -161,7 +154,7 @@ const App = () => {
         if (Items[i].quantity === 0) {
           val.splice(val.indexOf(val[i]), 1);
         }
-        if(boo){break;}
+        if (boo) { break; }
       }
     }
     setItems(val);
