@@ -13,6 +13,22 @@ import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup';
 import SimpleMenu from './Menu'
 import firebase from 'firebase/app';
 import 'firebase/database';
+import 'firebase/auth';
+import StyledFirebaseAuth from 'react-firebaseui/StyledFirebaseAuth';
+import "rbx/index.css";
+import {Message} from "rbx";
+
+const uiConfig = {
+  signInFlow: 'popup',
+  signInOptions: [
+    firebase.auth.GoogleAuthProvider.PROVIDER_ID
+  ],
+  callbacks: {
+    signInSuccessWithAuthResult: () => false
+  }
+};
+
+
 
 const firebaseConfig = {
   apiKey: "AIzaSyB8CaRsqtVcKVbXXrFiGLsibyz_kLf1TBI",
@@ -56,6 +72,8 @@ const App = () => {
       setData(json);
     };
 
+
+
     const handleData = snap => {
       if (snap.val()) setInventory(snap.val());
     }
@@ -64,6 +82,33 @@ const App = () => {
     return () => { db.off('value', handleData); };
   }, []);
 
+  const [user, setUser] = useState(null);
+  const Welcome = ({ user }) => (
+    <Message color="info">
+      <Message.Header>
+        Welcome, {user.displayName}
+        <Button primary onClick={() => firebase.auth().signOut()}>
+          Log out
+          </Button>
+      </Message.Header>
+    </Message>
+  );
+
+  const SignIn = () => (
+    <StyledFirebaseAuth
+      uiConfig={uiConfig}
+      firebaseAuth={firebase.auth()}
+    />
+  );
+  const Banner = ({ user, title }) => (
+    <React.Fragment>
+      {user ? <Welcome user={user} /> : <SignIn />}
+    </React.Fragment>
+  );
+
+  useEffect(() => {
+    firebase.auth().onAuthStateChanged(setUser);
+  }, []);
   const [state, setState] = useState({ left: true });
   const toggleDrawer = (side, open) => event => {
     if (
@@ -291,6 +336,7 @@ const App = () => {
   return (
     <div>
       <div>
+        <Banner user={user}/>
         <Button onClick={toggleDrawer('right', true)} style={{ float: "right" }}><AddShoppingCartIcon style={{ fontSize: 50, float: "right" }} /></Button>
         <Drawer anchor="right" open={state.right} onClose={toggleDrawer("right", false)}>
           <div>
@@ -311,7 +357,7 @@ const App = () => {
               ))}
 
             </List>
-            <Box style={{ marginTop: 800 }} component="span" display="block" p={1} m={1} bgcolor="background.paper"><h3>{'Total Price: $' + sumPrice()}</h3></Box>
+            <Box style={{ marginTop: 50, marginLeft:10}} component="span" display="block" p={1} m={1} bgcolor="background.paper"><h3>{'Total Price: $' + sumPrice()}</h3></Box>
           </div>
         </Drawer>
       </div>
